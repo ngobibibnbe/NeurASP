@@ -1,21 +1,16 @@
 import sys
-#sys.path.append('/content/drive/MyDrive/Projets/deepproblog/')
 import os
 cwd = os.getcwd()
 print("--------------"+cwd)
 
 from train import train_model
 from data_loader import load
-#sys.path.append('examples/NIPS/MNIST')
 from mnist import test_MNIST, MNIST_Net, neural_predicate
 from model import Model
 from optimizer import Optimizer
 from network import Network
 import torch
 
-#os.chdir('/content/drive/MyDrive/Projets/deepproblog/')
-
-#sys.path.append('C:/Users/sophie/Desktop/iCS/reseacrch project/deepproblog/examples/NIPS/MNIST/single_digit')
 queries = load('train_data.txt')
 
 with open('addition.pl') as f:
