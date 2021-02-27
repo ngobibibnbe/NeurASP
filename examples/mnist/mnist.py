@@ -416,7 +416,7 @@ class NeurASP(object):
                 printed_acc, _ = self.testNN('digit', test_loader)
                 #print("---------------------mon print accuracy=", printed_acc)
                 
-                if dataIdx%100==0:
+                if dataIdx%500==0:
                     writer.add_scalar("NeurASP",printed_acc,dataIdx)
                     print(dataIdx)
 

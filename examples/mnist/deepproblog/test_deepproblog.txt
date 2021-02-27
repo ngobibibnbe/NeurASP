@@ -1,3 +1,4 @@
+
 --------------/home/amngobibin/Bureau/NeurASP/examples/mnist/deepproblog
 Training for 1 epochs (30000 iterations).
 ok
