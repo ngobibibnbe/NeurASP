@@ -31,32 +31,36 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
     if sup_Entity :
         FEdprogram = r'''
         nn(nerjoinre(1,R,IdR), [ work_For, kill, orgBased_In, live_In, located_In,no]) :- relation(R,IdR,IdE1,IdE2).
-        nn(nerjoinre(1,E,IdE), [no, loc, org, peop, other]) :- entity(E,IdE,Value).
+        nn(nerjoinre(1,E,IdE), [no, loc, org, peop, other]) :- entity(E,IdE,Value,Start,End).
 
         '''
         FEaspProgram = r'''
-        % an entity can't have two name assignement 
+        entity(E,IdE,Value) :- entity(E,IdE,Value,Start,End).
+        
+        % we remove near span duplication
+        
+         nested(IdE2, IdE1) :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), ((Start1 - Start2)*(End1-End2))=1, (Start2 - End2)>1.
+         nested(IdE1, IdE2) :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (Start2 - Start1)*(End2-End1)=1 , (Start1-End1)>1.
+         nerjoinre(0,E,IdE1,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE2, IdE1).
+         nerjoinre(0,E,IdE2,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE1, IdE2).
+        
+        % an entity can't have two types  
+         
          test(Value, Named) :- nerjoinre(0,E,IdE,Named) , entity(E,IdE,Value).
          test_1(Value) :- entity(E,IdE,Value).
          count_value(Value, S) :- S=#count{E : test(Value, E)} ,test_1(Value).
          :- count_value(Value, S), S>1 .
 
-        % Each entity pair can be assign a relation once. 
-
-         entity_pair_relation(Value1, Value2,R1, Named_Relation):-nerjoinre(0,R,R1,Named_Relation), relation(R,R1,E1,E2),entity(E,E1,Value1), entity(E,E2,Value2).
-         entity_pair(Value1, Value2, Named_Relation) :- nerjoinre(0,R,R1,Named_Relation), relation(R,R1,E1,E2), entity(E,E1,Value1), entity(E,E2,Value2).
-         test_pair(Value1, Value2, Named_Relation, S):- S=#count{R1 : entity_pair_relation(Value1, Value2,R1, Named_Relation)}, entity_pair(Value1, Value2, Named_Relation).
-         :- test_pair(Value1, Value2, Named_Relation, S), S>1.
-        
+         
         % if a relation has an entity no, it should be assign no directly. 
-        nerjoinre(0,R,IdR,no):-relation(R,IdR,IdE1,IdE2), entity(E,IdE1,_), nerjoinre(0,E,IdE1,no).
-        nerjoinre(0,R,IdR,no):-relation(R,IdR,IdE1,IdE2), entity(E,IdE2,_), nerjoinre(0,E,IdE2,no).
+         nerjoinre(0,R,IdR,no):-relation(R,IdR,IdE1,IdE2), entity(E,IdE1,_), nerjoinre(0,E,IdE1,no).
+         nerjoinre(0,R,IdR,no):-relation(R,IdR,IdE1,IdE2), entity(E,IdE2,_), nerjoinre(0,E,IdE2,no).
 
         % the type assignment to each entity should be consistent with it's neighbour relation
 
-        group(IdR,R1,E1,E2):- relation(R,IdR,IdE1,IdE2),nerjoinre(0,E,IdE1,E1), nerjoinre(0,E,IdE2,E2),nerjoinre(0,R,IdR,R1).
-        :- relation(R,IdR,IdE1,IdE2),nerjoinre(0,E,IdE2,E2),nerjoinre(0,E,IdE1,E1), entity(e,IdE1,_), entity(e,IdE2,_), not group(IdR,no,E1,E2), 
-        not group(IdR,work_For,peop,org), not group(IdR,kill,peop,peop), not group(IdR,orgBased_In,org,loc),
+         group(IdR,R1,E1,E2):- relation(R,IdR,IdE1,IdE2),nerjoinre(0,E,IdE1,E1), nerjoinre(0,E,IdE2,E2),nerjoinre(0,R,IdR,R1).
+         :- relation(R,IdR,IdE1,IdE2),nerjoinre(0,E,IdE2,E2),nerjoinre(0,E,IdE1,E1), entity(e,IdE1,_), entity(e,IdE2,_), not group(IdR,no,E1,E2), 
+         not group(IdR,work_For,peop,org), not group(IdR,kill,peop,peop), not group(IdR,orgBased_In,org,loc),
         not group(IdR,live_In,peop,loc), not group(IdR,located_In,loc,loc) .
         '''
 
@@ -71,17 +75,17 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
         entities=[]
         entities_with_all=document["entities"]
         for idx, entity_brut in enumerate(entities_with_all):
-            entity_words = ('_'.join(document["tokens"][entity_brut["start"]:entity_brut["end"]])).replace("ó","o")
+            entity_words = (''.join(document["tokens"][entity_brut["start"]:entity_brut["end"]])).replace("ó","o")
             text = unicodedata.normalize('NFD', entity_words)\
            .encode('ascii', 'ignore')\
            .decode("utf-8")
             entity_words = str(text)
             entity_probs = entity_brut["probs"].split("[")[1].split("]")[0]
             entity_type = str(entity_brut["type"])
-            Factlist=Factlist+"entity(e,e"+str(idx)+",'b_"+(''.join(e for e in entity_words if e.isalnum())).lower()+"').\n "
-            probs =1.2*np.fromstring(entity_probs, dtype=float, sep=' ')
-            probs[0]=0.2
-            print("********",probs)
+            Factlist=Factlist+"entity(e,e"+str(idx)+",'b_"+(''.join(e for e in entity_words if e.isalnum())).lower()+"',"+str(entity_brut["start"])+","+str(entity_brut["end"])+").\n "
+            probs =1*np.fromstring(entity_probs, dtype=float, sep=' ')
+            #probs[0]=0.2
+            #print("********",probs)
             DataList['e,e'+str(idx)]=torch.tensor([probs], dtype=torch.float64)
 
             
@@ -90,11 +94,12 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
         # relation(r,r1,e1,e2)ZZ
         relations_with_all=document["relations"]
         for idx ,relation_brut in enumerate(relations_with_all):
+            #print("**rel**",relation_brut)
             relation_probs = relation_brut["probs"].split("[")[1].split("]")[0]
-            Factlist=Factlist+"relation(r,r"+str(idx)+",e"+str(relation_brut["head"])+",e"+str(relation_brut["tail"])+").\n "
             probs= np.fromstring(relation_probs, dtype=float, sep=' ')
-            probs =np.append(probs, [0.5])
+            probs =np.append(probs, [0.2])
             DataList['r,r'+str(idx)] = torch.tensor([probs], dtype=torch.float64)
+            Factlist=Factlist+"relation(r,r"+str(idx)+",e"+str(relation_brut["head"])+",e"+str(relation_brut["tail"])+").\n "
         Factlist=[Factlist]
         DataList=[DataList]
         #print("datalist***",DataList)
@@ -106,6 +111,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             NeurASPobj = NeurASP(FEdprogram + facts, nnMapping, optimizers=None)
             # Find the most probable stable model
             models = NeurASPobj.infer(dataDic=DataList[idx], obs='', mvpp=FEaspProgram + facts)
+            print("**",models)
         bool=True
         if bool :
             for model in models[0]:
@@ -115,8 +121,22 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
                         data_JSON[doc_id]["relations"][int(relation_id)]["type"]= atom.split(",")[3].split(")")[0].upper()[:1] + atom.split(",")[3].split(")")[0][1:]
                     if 'nerjoinre(0,e,e' in atom :
                         entity_id= atom.split("nerjoinre(0,e,e")[1].split(",")[0]
-                        print(doc_id,"**",entity_id, "**", data_JSON[doc_id]["entities"])
+                        #print(doc_id,"**",entity_id, "**", data_JSON[doc_id]["entities"])
                         data_JSON[doc_id]["entities"][int(entity_id)]["type"]= atom.split(",")[3].split(")")[0][:1].upper() + atom.split(",")[3].split(")")[0][1:]
+                removed=0
+                if sup_Entity:
+                    entity_with_all =[]
+                    for idx,entity in enumerate(data_JSON[doc_id]["entities"]):
+                        if entity["type"]!="No":
+                            entity_with_all.append(entity)
+                        else :
+                            for relation in data_JSON[doc_id]["relations"] :
+                                if relation["head"]>= idx:
+                                    relation["head"]-=1
+                                if relation["tail"]>= idx:
+                                    relation["tail"]-=1
+                            
+                    data_JSON[doc_id]["entities"]=entity_with_all
                     
                 if sup :
                     relation_with_all =[]
@@ -127,13 +147,9 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
                     data_JSON[doc_id]["relations"]=relation_with_all
 
                         #data_JSON[doc_id]["relations"].remove(int(relation_id))
-                if sup_Entity:
-                    entity_with_all =[]
-                    for entity in data_JSON[doc_id]["entities"]:
-                        if entity["type"]!="No":
-                            entity_with_all.append(entity)
+                
 
-                    data_JSON[doc_id]["entities"]=entity_with_all
+                    
 
     #print(data_JSON[:2])
     with open(file_result, 'w') as f:
@@ -149,8 +165,8 @@ for threshold in thresholds:
     for file_ in files :
         with open(file_) as file :
             data_JSON = json.load(file)
-        file_result=file_.split("\\")[0]
-        file_result+="\\"+file_.split("\\")[1]
+        file_result=file_.split("\\")[0] +"\\"+file_.split("\\")[1] +"\\"+file_.split("\\")[2]
         file_name=file_.split('\\')[-1]
         file_result3=file_result+"\\neurASP-SUP_"+file_name
         NeurSUP(data_JSON,file_result3,sup=True,sup_Entity=True)
+        
