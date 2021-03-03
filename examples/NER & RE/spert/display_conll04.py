@@ -93,10 +93,10 @@ for threshold,values_parts in result.items():
                             ####################après enlever pour qu'on ait aussi le micro 
                             print(epoch, " ", threshold)
                             writer.add_scalars("Test-"+database+" "+str("runs/"+threshold+"/"+key_type+"/"+key_eval+"/"+metric) ,
-                                                {"SPERT": float(value["predictions"]), 
-                                                "SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-FE": float(value["neurASP-FE"]),
-                                                "SPERT-Neur-FE-SUP": float(value["neurASP-FE-SUP"]),
-                                                "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, int(epoch))
+                                                {"SPERT": float(value["predictions"]), "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, int(epoch))
+                            """                    "SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-FE": float(value["neurASP-FE"]),
+                                                "SPERT-Neur-FE-SUP": float(value["neurASP-FE-SUP"]),"""
+                                                
                             #ceci c'est en function du threshold"""
                             if database =="scierc":
                                 writer.add_scalars("Test-epoch"+threshold+" "+database+" "+str(key_type+"/"+key_eval+"/"+metric) ,

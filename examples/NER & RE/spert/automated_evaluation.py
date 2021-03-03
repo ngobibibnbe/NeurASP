@@ -105,7 +105,7 @@ for prediction in glob(str(dir)):
         evaluator = CustomEvaluator(pred_dataset, test_dataset)
         evaluator.compute_scores()
 
-        print('#################', os.path.basename(neur_pred))
+        """print('#################', os.path.basename(neur_pred))
         evaluator = CustomEvaluator(neur_dataset, test_dataset)
         evaluator.compute_scores()
         
@@ -115,7 +115,7 @@ for prediction in glob(str(dir)):
 
         print('#################', os.path.basename(neur3_pred))
         evaluator = CustomEvaluator(neur3_dataset, test_dataset)
-        evaluator.compute_scores()
+        evaluator.compute_scores()"""
         
         neur4_dataset = reader.read(neur4_pred, dataset_label)
         print('#################', os.path.basename(neur4_pred))
