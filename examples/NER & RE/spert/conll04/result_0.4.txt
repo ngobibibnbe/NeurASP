@@ -10,8 +10,8 @@ An entity is considered correct if the entity type and span is predicted correct
 
                 type    precision       recall     f1-score      support
                  Org        71.79        14.14        23.63          198
-                Peop        25.28        63.55        36.17          321
                  Loc        69.23        16.86        27.12          427
+                Peop        25.28        63.55        36.17          321
                Other         0.00         0.00         0.00          133
 
                micro        32.00        28.17        29.97         1079
@@ -23,11 +23,11 @@ Without named entity classification (NEC)
 A relation is considered correct if the relation type and the spans of the two related entities are predicted correctly (entity type is not considered)
 
                 type    precision       recall     f1-score      support
-               LocIn         0.00         0.00         0.00           94
                 Live         0.00         0.00         0.00          100
-               OrgBI         0.00         0.00         0.00          105
-                Kill         0.72         2.13         1.08           47
+               LocIn         0.00         0.00         0.00           94
                 Work         3.92         5.26         4.49           76
+                Kill         0.72         2.13         1.08           47
+               OrgBI         0.00         0.00         0.00          105
 
                micro         2.06         1.18         1.50          422
                macro         0.93         1.48         1.12          422
@@ -36,11 +36,53 @@ With named entity classification (NEC)
 A relation is considered correct if the relation type and the two related entities are predicted correctly (in span and entity type)
 
                 type    precision       recall     f1-score      support
-               LocIn         0.00         0.00         0.00           94
                 Live         0.00         0.00         0.00          100
-               OrgBI         0.00         0.00         0.00          105
-                Kill         0.72         2.13         1.08           47
+               LocIn         0.00         0.00         0.00           94
                 Work         3.92         5.26         4.49           76
+                Kill         0.72         2.13         1.08           47
+               OrgBI         0.00         0.00         0.00          105
 
                micro         2.06         1.18         1.50          422
                macro         0.93         1.48         1.12          422
+################# neurASP-SUP_predictions_valid_epoch_1.json
+Evaluation
+
+--- Entities (named entity recognition (NER)) ---
+An entity is considered correct if the entity type and span is predicted correctly
+
+                type    precision       recall     f1-score      support
+                 Org        71.79        14.14        23.63          198
+                 Loc        69.23        16.86        27.12          427
+                Peop        25.25        62.93        36.04          321
+               Other         0.00         0.00         0.00          133
+
+               micro        32.03        27.99        29.87         1079
+               macro        41.57        23.48        21.70         1079
+
+--- Relations ---
+
+Without named entity classification (NEC)
+A relation is considered correct if the relation type and the spans of the two related entities are predicted correctly (entity type is not considered)
+
+                type    precision       recall     f1-score      support
+                Live         0.00         0.00         0.00          100
+               LocIn         0.00         0.00         0.00           94
+                Work         3.92         5.26         4.49           76
+                Kill         0.90         2.13         1.27           47
+               OrgBI         0.00         0.00         0.00          105
+
+               micro         2.31         1.18         1.57          422
+               macro         0.96         1.48         1.15          422
+
+With named entity classification (NEC)
+A relation is considered correct if the relation type and the two related entities are predicted correctly (in span and entity type)
+
+                type    precision       recall     f1-score      support
+                Live         0.00         0.00         0.00          100
+               LocIn         0.00         0.00         0.00           94
+                Work         3.92         5.26         4.49           76
+                Kill         0.90         2.13         1.27           47
+               OrgBI         0.00         0.00         0.00          105
+
+               micro         2.31         1.18         1.57          422
+               macro         0.96         1.48         1.15          422
