@@ -98,8 +98,8 @@ for prediction in glob(str(dir)):
     if os.path.isfile(neur4_pred):
         pred_dataset = reader.read(prediction, dataset_label)
         neur_dataset = reader.read(neur_pred, dataset_label)
-        neur2_dataset = reader.read(neur2_pred, dataset_label)
-        neur3_dataset = reader.read(neur3_pred, dataset_label)
+        """neur2_dataset = reader.read(neur2_pred, dataset_label)
+        neur3_dataset = reader.read(neur3_pred, dataset_label)"""
 
         print('#################', os.path.basename(prediction))
         evaluator = CustomEvaluator(pred_dataset, test_dataset)
