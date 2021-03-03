@@ -39,10 +39,10 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
         
         % we remove near span duplication
         
-         nested(IdE2, IdE1) :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), ((Start1 - Start2)*(End1-End2))=1, (Start2 - End2)>1.
-         nested(IdE1, IdE2) :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (Start2 - Start1)*(End2-End1)=1 , (Start1-End1)>1.
-         nerjoinre(0,E,IdE1,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE2, IdE1).
-         nerjoinre(0,E,IdE2,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE1, IdE2).
+         1{nerjoinre(0,E,IdE1,no);nerjoinre(0,E,IdE2,no) }2 :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
+         %nested(IdE1, IdE2) :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (Start2 - Start1)*(End2-End1)=1 , (Start1-End1)>1.
+         %nerjoinre(0,E,IdE1,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE2, IdE1).
+         %nerjoinre(0,E,IdE2,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE1, IdE2).
         
         % an entity can't have two types  
          
@@ -84,7 +84,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             entity_type = str(entity_brut["type"])
             Factlist=Factlist+"entity(e,e"+str(idx)+",'b_"+(''.join(e for e in entity_words if e.isalnum())).lower()+"',"+str(entity_brut["start"])+","+str(entity_brut["end"])+").\n "
             probs =1*np.fromstring(entity_probs, dtype=float, sep=' ')
-            #probs[0]=0.2
+            probs[0]=0.2
             #print("********",probs)
             DataList['e,e'+str(idx)]=torch.tensor([probs], dtype=torch.float64)
 
@@ -97,7 +97,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             #print("**rel**",relation_brut)
             relation_probs = relation_brut["probs"].split("[")[1].split("]")[0]
             probs= np.fromstring(relation_probs, dtype=float, sep=' ')
-            probs =np.append(probs, [0.2])
+            probs =np.append(probs, [0.3])
             DataList['r,r'+str(idx)] = torch.tensor([probs], dtype=torch.float64)
             Factlist=Factlist+"relation(r,r"+str(idx)+",e"+str(relation_brut["head"])+",e"+str(relation_brut["tail"])+").\n "
         Factlist=[Factlist]
