@@ -39,14 +39,25 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
         
         % we remove near span duplication
         
-         1{nerjoinre(0,E,IdE1,no);nerjoinre(0,E,IdE2,no) }2 :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
-         %nested(IdE1, IdE2) :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (Start2 - Start1)*(End2-End1)=1 , (Start1-End1)>1.
-         %nerjoinre(0,E,IdE1,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE2, IdE1).
+        % -- 1{nerjoinre(0,E,IdE1,no);nerjoinre(0,E,IdE2,no) }1  :-  entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
+        % nerjoinre(0,E,IdE1,no);nerjoinre(0,E,IdE2,no) }1  :-  entity(E,IdE1,Value),entity(E,IdE2,Value), entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
+
+         %1{nerjoinre(0,E,IdE1,no);nerjoinre(0,E,IdE2,no) }1 :- entity(E,IdE1,Value),entity(E,IdE2,Value), entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
+         
+         nested(IdE1, IdE2) :- nerjoinre(0,E,IdE2,Name),Name!=no , entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
+         
+         % knowledge transfer 
+         % à arranger  relation(R,IdR,IdE2,IdE3),nerjoinre(0,R,IdR,no) :- nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE1,IdE3),nerjoinre(0,R,IdR,Relation), Relation!=no.
+         % à arranger  newrelation(IdR,IdE3,IdE2,Relation) ,nerjoinre(0,R,IdR,no) :- nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE3,IdE1),nerjoinre(0,R,IdR,Relation), Relation!=no.
+         
+         %no more necessary 
+         % nested(IdE1, IdE2) :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (Start2 - Start1)*(End2-End1)=1 , (Start1-End1)>1.
+         % nerjoinre(0,E,IdE1,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE2, IdE1).
          %nerjoinre(0,E,IdE2,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE1, IdE2).
         
         % an entity can't have two types  
          
-         test(Value, Named) :- nerjoinre(0,E,IdE,Named) , entity(E,IdE,Value).
+         test(Value, Named) :- nerjoinre(0,E,IdE,Named) , entity(E,IdE,Value), not nerjoinre(0,E,IdE,no).
          test_1(Value) :- entity(E,IdE,Value).
          count_value(Value, S) :- S=#count{E : test(Value, E)} ,test_1(Value).
          :- count_value(Value, S), S>1 .
@@ -84,7 +95,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             entity_type = str(entity_brut["type"])
             Factlist=Factlist+"entity(e,e"+str(idx)+",'b_"+(''.join(e for e in entity_words if e.isalnum())).lower()+"',"+str(entity_brut["start"])+","+str(entity_brut["end"])+").\n "
             probs =1*np.fromstring(entity_probs, dtype=float, sep=' ')
-            probs[0]=0.2
+            probs[0]=0.1
             #print("********",probs)
             DataList['e,e'+str(idx)]=torch.tensor([probs], dtype=torch.float64)
 
@@ -119,32 +130,41 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
                     if 'nerjoinre(0,r,r' in atom:
                         relation_id= atom.split("nerjoinre(0,r,r")[1].split(",")[0]
                         data_JSON[doc_id]["relations"][int(relation_id)]["type"]= atom.split(",")[3].split(")")[0].upper()[:1] + atom.split(",")[3].split(")")[0][1:]
+
+                    if 'newrelation(' in atom:
+                        relation={}
+                        relation["head"]=atom.split(",")[1]
+                        relation["tail"]=atom.split(",")[2]
+                        relation["type"]=atom.split(",")[3].split(",")[0].upper()[:1] + atom.split(",")[3].split(",")[0].upper()[1:]
+                        data_JSON[doc_id]["relations"].append(relation)
+                        
                     if 'nerjoinre(0,e,e' in atom :
                         entity_id= atom.split("nerjoinre(0,e,e")[1].split(",")[0]
-                        #print(doc_id,"**",entity_id, "**", data_JSON[doc_id]["entities"])
                         data_JSON[doc_id]["entities"][int(entity_id)]["type"]= atom.split(",")[3].split(")")[0][:1].upper() + atom.split(",")[3].split(")")[0][1:]
-                removed=0
-                if sup_Entity:
-                    entity_with_all =[]
-                    for idx,entity in enumerate(data_JSON[doc_id]["entities"]):
-                        if entity["type"]!="No":
-                            entity_with_all.append(entity)
-                        else :
-                            for relation in data_JSON[doc_id]["relations"] :
-                                if relation["head"]>= idx:
-                                    relation["head"]-=1
-                                if relation["tail"]>= idx:
-                                    relation["tail"]-=1
-                            
-                    data_JSON[doc_id]["entities"]=entity_with_all
-                    
-                if sup :
-                    relation_with_all =[]
-                    for relation in data_JSON[doc_id]["relations"]:
-                        if relation["type"]!="No":
-                            relation_with_all.append(relation)
 
-                    data_JSON[doc_id]["relations"]=relation_with_all
+            if sup_Entity:
+                entity_with_all =[]
+                removed=0
+                for idx,entity in enumerate(data_JSON[doc_id]["entities"]):
+                    if entity["type"]!="No":
+                        entity_with_all.append(entity)
+                    else :
+                        removed+=1
+                        for relation in data_JSON[doc_id]["relations"] :
+                            if relation["head"]>= removed:
+                                relation["head"]-=1
+                            if relation["tail"]>= removed:
+                                relation["tail"]-=1
+                        
+                data_JSON[doc_id]["entities"]=entity_with_all
+                
+            if sup :
+                relation_with_all =[]
+                for relation in data_JSON[doc_id]["relations"]:
+                    if relation["type"]!="No":
+                        relation_with_all.append(relation)
+
+                data_JSON[doc_id]["relations"]=relation_with_all
 
                         #data_JSON[doc_id]["relations"].remove(int(relation_id))
                 
