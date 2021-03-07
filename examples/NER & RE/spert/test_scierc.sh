@@ -1,2 +1,0 @@
-python automated_evaluation.py "logs\scierc_treshold_0.1" scierc > "C:\Users\sophie\Desktop\iCS\reseacrch project\NeurASP\NeurASP\examples\NER & RE\Scierc\result_0.1"
-python automated_evaluation.py "logs\scierc_treshold_0.3" scierc > "C:\Users\sophie\Desktop\iCS\reseacrch project\NeurASP\NeurASP\examples\NER & RE\Scierc\result_0.3"
