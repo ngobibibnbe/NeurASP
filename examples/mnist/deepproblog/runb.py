@@ -100,7 +100,7 @@ trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=T
 
 i = 1
 test_period = 500
-log_period = 50
+log_period = 500
 running_loss = 0.0
 log = Logger()
 
