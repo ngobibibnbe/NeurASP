@@ -18,7 +18,7 @@ def get_macro_and_micro(dict, file,nam):
             return dict 
         
 def get_result_by_threshold(threshold):
-    result = "conll04/result_"+str(threshold)+".txt"
+    result = "CONLL04/result_"+str(threshold)+".txt"
     
     f = open(result, "r")   
     all=[]
@@ -58,12 +58,12 @@ def get_result_by_threshold(threshold):
     f.close()
     return dict
 
-thresholds=[0.4]
+thresholds=[0.1,0.4,0.8]
 result={}
 for threshold in thresholds :
     result[str(threshold)]=get_result_by_threshold(threshold)
 
-print(result)
+#print(result)
 
 
 
@@ -78,35 +78,41 @@ writer = SummaryWriter(database+"/Threshold")
 
 for threshold,values_parts in result.items():
     #0.1
-        for key_type,type_evaluation in values_parts.items() :
-            print(key_type)
-            #NER
-            for key_eval, evaluation in type_evaluation.items() :
-                #micro
-                
-                for metric, values in evaluation.items() :
-                        #precision
-                    if key_eval =="micro" : #and (key_type=="NER-RE" or key_type=="RE" ): 
-                        print(values)
-                        
-                        for epoch, value in values.items():
-                            ####################après enlever pour qu'on ait aussi le micro 
-                            print(epoch, " ", threshold)
-                            writer.add_scalars("Test-"+database+" "+str("runs/"+threshold+"/"+key_type+"/"+key_eval+"/"+metric) ,
-                                                {"SPERT": float(value["predictions"]), "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, int(epoch))
-                            """                    "SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-FE": float(value["neurASP-FE"]),
-                                                "SPERT-Neur-FE-SUP": float(value["neurASP-FE-SUP"]),"""
-                                                
-                            #ceci c'est en function du threshold"""
-                            if database =="scierc":
-                                writer.add_scalars("Test-epoch"+threshold+" "+database+" "+str(key_type+"/"+key_eval+"/"+metric) ,
-                                                {"SPERT": float(value["predictions"]), 
-                                                "SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-FE": float(value["neurASP-FE"]),
-                                                "SPERT-Neur-FE-SUP": float(value["neurASP-FE-SUP"]),
-                                                "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, float(epoch))
-                            """ else :
-                                writer.add_scalars("Test-epoch"+threshold+" "+database+" "+str(key_type+"/"+key_eval+"/"+metric) ,
-                                                {"SPERT": float(value["predictions"]), 
-                                                "SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-FE": float(value["neurASP-FE"]),
-                                                "SPERT-Neur-FE-SUP": float(value["neurASP-FE-SUP"])}, float(epoch)*100)"""
+    print(threshold)
+    for key_type,type_evaluation in values_parts.items() :
+        print(key_type)
+        #NER
+        for key_eval, evaluation in type_evaluation.items() :
+            #micro
+            print(key_eval)
+            for metric, values in evaluation.items() :
+                #precision
+                print(metric)
+                if key_eval =="micro" :# or key_type=="RE" ): 
+                    #print(key_eval," ",key_type, " ",metric)
+                    i=0
+                    values=dict(sorted(values.items(), key=lambda item: int(item[0])))#k: v for k, v in sorted(values.items(), key=lambda item: int(item[0]))}
+                    print(values)
+                    for epoch, value in values.items():
+                        i+=1
+                        ####################après enlever pour qu'on ait aussi le micro 
+                        print(epoch, " ", float(value["neurASP-SUP"]), " ",float(value["neurASP-SUP"]) )
+                        writer.add_scalars("Test-"+database+" "+str("runs/"+threshold+"/"+key_eval+"/"+key_type+"/"+metric) ,
+                        {"SPERT": float(value["predictions"]), "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, int(epoch))
+                        #                    {"SPERT": float(value["predictions"]), "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, int(epoch))
+                        #                   "SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-FE": float(value["neurASP-FE"]),
+                        #                    "SPERT-Neur-FE-SUP": float(value["neurASP-FE-SUP"]),"""
+                                            
+                        #ceci c'est en function du threshold"""
+                        if database =="scierc":
+                            writer.add_scalars("Test-epoch"+threshold+" "+database+" "+str(key_type+"/"+key_eval+"/"+metric) ,
+                                            {"SPERT": float(value["predictions"]), 
+                                            "SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-FE": float(value["neurASP-FE"]),
+                                            "SPERT-Neur-FE-SUP": float(value["neurASP-FE-SUP"]),
+                                            "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, float(epoch))
+                        """ else :
+                            writer.add_scalars("Test-epoch"+threshold+" "+database+" "+str(key_type+"/"+key_eval+"/"+metric) ,
+                                            {"SPERT": float(value["predictions"]), 
+                                            "SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-FE": float(value["neurASP-FE"]),
+                                            "SPERT-Neur-FE-SUP": float(value["neurASP-FE-SUP"])}, float(epoch)*100)"""
 writer.close()
