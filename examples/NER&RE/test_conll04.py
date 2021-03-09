@@ -13,7 +13,6 @@ from network import Net
 from neurasp import NeurASP
 import pandas as pd
 from torchvision import datasets, transforms
-import helper
 import cv2
 import glob
 import json
@@ -95,7 +94,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             entity_type = str(entity_brut["type"])
             Factlist=Factlist+"entity(e,e"+str(idx)+",'b_"+(''.join(e for e in entity_words if e.isalnum())).lower()+"',"+str(entity_brut["start"])+","+str(entity_brut["end"])+").\n "
             probs =1*np.fromstring(entity_probs, dtype=float, sep=' ')
-            probs[0]=0.1
+            #probs[0]=0.1
             #print("********",probs)
             DataList['e,e'+str(idx)]=torch.tensor([probs], dtype=torch.float64)
 
@@ -108,7 +107,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             #print("**rel**",relation_brut)
             relation_probs = relation_brut["probs"].split("[")[1].split("]")[0]
             probs= np.fromstring(relation_probs, dtype=float, sep=' ')
-            probs =np.append(probs, [0.3])
+            probs =np.append(probs, probs.min())
             DataList['r,r'+str(idx)] = torch.tensor([probs], dtype=torch.float64)
             Factlist=Factlist+"relation(r,r"+str(idx)+",e"+str(relation_brut["head"])+",e"+str(relation_brut["tail"])+").\n "
         Factlist=[Factlist]
@@ -176,17 +175,16 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
         json.dump(data_JSON, f)
         print("*********** You can actually test your model with evaluation functions")
 
-print("ok")
 
-thresholds=[0.4]
+thresholds=[0.1,0.8,0.4]
 #print("logs\spert_treshold_"+str(threshold)+"/*.json")
 for threshold in thresholds:
-    files =glob.glob("CONLL04\logs\spert_treshold_"+str(threshold)+"\predictions*.json")
+    files =glob.glob("CONLL04/logs/spert_treshold_"+str(threshold)+"/predictions*.json")
     for file_ in files :
         with open(file_) as file :
             data_JSON = json.load(file)
-        file_result=file_.split("\\")[0] +"\\"+file_.split("\\")[1] +"\\"+file_.split("\\")[2]
-        file_name=file_.split('\\')[-1]
-        file_result3=file_result+"\\neurASP-SUP_"+file_name
+        file_result=file_.split("/")[0] +"/"+file_.split("/")[1] +"/"+file_.split("/")[2]
+        file_name=file_.split('/')[-1]
+        file_result3=file_result+"/neurASP-SUP_"+file_name
         NeurSUP(data_JSON,file_result3,sup=True,sup_Entity=True)
         
