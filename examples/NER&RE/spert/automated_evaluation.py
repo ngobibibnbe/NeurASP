@@ -21,7 +21,7 @@ if args.path :
   #neur_path = 'neurASP_predictions_valid_epoch_16.json'
   print(args.path)
 
-dataset_path = 'data/datasets/conll04/conll04_train.json'
+dataset_path = 'data/datasets/conll04/conll04_test.json'
 model_path = 'bert-base-cased'
 types_path = 'data/datasets/conll04/conll04_types.json'
 

@@ -25,7 +25,6 @@ print("***********************************************METHOD3")
 
 m = Net()    
 nnMapping = {'nerjoinre': m}  
-
 def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
 
     if sup_Entity :
@@ -37,31 +36,29 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
         FEaspProgram = r'''
         entity(E,IdE,Value) :- entity(E,IdE,Value,Start,End).
         
-        % we remove near span duplication
-        
+        % we remove near span duplication 
         1{nerjoinre(0,E,IdE1,no);nerjoinre(0,E,IdE2,no) }1  :-  entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
-        % nerjoinre(0,E,IdE1,no);nerjoinre(0,E,IdE2,no) }1  :-  entity(E,IdE1,Value),entity(E,IdE2,Value), entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
-
-         %1{nerjoinre(0,E,IdE1,no);nerjoinre(0,E,IdE2,no) }1 :- entity(E,IdE1,Value),entity(E,IdE2,Value), entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
-         
-         nested(IdE1, IdE2) :- nerjoinre(0,E,IdE2,Name),Name!=no , entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
-         
-         % knowledge transfer 
-         % à arranger  relation(R,IdR,IdE2,IdE3),nerjoinre(0,R,IdR,no) :- nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE1,IdE3),nerjoinre(0,R,IdR,Relation), Relation!=no.
-         % à arranger  newrelation(IdR,IdE3,IdE2,Relation) ,nerjoinre(0,R,IdR,no) :- nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE3,IdE1),nerjoinre(0,R,IdR,Relation), Relation!=no.
-         
-         %no more necessary 
-         % nested(IdE1, IdE2) :- entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (Start2 - Start1)*(End2-End1)=1 , (Start1-End1)>1.
-         % nerjoinre(0,E,IdE1,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE2, IdE1).
-         %nerjoinre(0,E,IdE2,no) :- entity(E,IdE1,Value),entity(E,IdE2,Value),nested(IdE1, IdE2).
+        nested(IdE1, IdE2)  :- nerjoinre(0,E,IdE1,Name), Name!=no, entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
         
+        % knowledge transfer 
+        newrelation(IdR,IdE3,IdE1,Relation) ,nerjoinre(0,R,IdR,no) :- nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE3,IdE1),nerjoinre(0,R,IdR,Relation), Relation!=no.
+        newrelation(IdR,IdE1,IdE3,Relation) ,nerjoinre(0,R,IdR,no) :- nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE1,IdE3),nerjoinre(0,R,IdR,Relation), Relation!=no.
+        
+        % identical entities should have the same relation if none is null of curse ***** à tester sans : 69,89 sans et 70,17 avec
+        %newrelation(IdR,IdE2,IdE3,Relation) :- relation(R,IdR,IdE1,IdE3),nerjoinre(0,R,IdR,Relation), nerjoinre(0,E,IdE1,Named),nerjoinre(0,E,IdE2,Named), Named!=no, Relation!=no, entity(E,IdE1,Value), entity(E,IdE2,Value).
+        %newrelation(IdR,IdE3,IdE2,Relation) :- relation(R,IdR,IdE3,IdE1),nerjoinre(0,R,IdR,Relation), nerjoinre(0,E,IdE1,Named),nerjoinre(0,E,IdE2,Named), Named!=no,Relation!=no, entity(E,IdE1,Value), entity(E,IdE2,Value).
+
+        % dependencies
+            % dependencies in location
+        newrelation(IdE1,IdE1,IdE3,located_In) :- relation(R,IdR1,IdE1,IdE2),relation(R,IdR2,IdE2,IdE3),not relation(R,_,IdE1,IdE3), nerjoinre(0,E,IdE3,loc), nerjoinre(0,E,IdE2,loc), nerjoinre(0,E,IdE1,loc),nerjoinre(0,R,IdR1,located_In),nerjoinre(0,R,IdR2,located_In).
+   
         % an entity can't have two types  
          
          test(Value, Named) :- nerjoinre(0,E,IdE,Named) , entity(E,IdE,Value), not nerjoinre(0,E,IdE,no).
          test_1(Value) :- entity(E,IdE,Value).
          count_value(Value, S) :- S=#count{E : test(Value, E)} ,test_1(Value).
-         :- count_value(Value, S), S>1 .
-
+         :- count_value(Value, S), S>1 .       
+         
          
         % if a relation has an entity no, it should be assign no directly. 
          nerjoinre(0,R,IdR,no):-relation(R,IdR,IdE1,IdE2), entity(E,IdE1,_), nerjoinre(0,E,IdE1,no).
@@ -73,6 +70,14 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
          :- relation(R,IdR,IdE1,IdE2),nerjoinre(0,E,IdE2,E2),nerjoinre(0,E,IdE1,E1), entity(e,IdE1,_), entity(e,IdE2,_), not group(IdR,no,E1,E2), 
          not group(IdR,work_For,peop,org), not group(IdR,kill,peop,peop), not group(IdR,orgBased_In,org,loc),
         not group(IdR,live_In,peop,loc), not group(IdR,located_In,loc,loc) .
+        
+        % type assignement for new relations
+        groupNew(IdR,R1,E1,E2):- newrelation(IdR,IdE1,IdE2,R1),nerjoinre(0,E,IdE1,E1), nerjoinre(0,E,IdE2,E2).
+
+         :- newrelation(IdR,IdE1,IdE2,R1),not groupNew(IdR,work_For,peop,org), not groupNew(IdR,kill,peop,peop),
+         not groupNew(IdR,orgBased_In,org,loc),
+        not groupNew(IdR,live_In,peop,loc), not groupNew(IdR,located_In,loc,loc) .
+        
         '''
 
     #i add relation(R,IdR,IdE1,IdE2), entity(e,IdE1,_,E1), entity(e,IdE2,_,E2), not group(IdR,no,E1,E2) from the previous test
@@ -80,7 +85,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
     
     for doc_id , document in enumerate(data_JSON):
         #document =data_JSON[1]
-        #doc_id=28
+        
         Factlist=""
         DataList={}
         entities=[]
@@ -133,9 +138,10 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
 
                     if 'newrelation(' in atom:
                         relation={}
-                        relation["head"]=atom.split(",")[1]
-                        relation["tail"]=atom.split(",")[2]
-                        relation["type"]=atom.split(",")[3].split(",")[0].upper()[:1] + atom.split(",")[3].split(",")[0].upper()[1:]
+                        relation["head"]=int(atom.split(",")[1][1])
+                        relation["tail"]=int(atom.split(",")[2][1])
+                        relation["type"]=atom.split(",")[3].split(")")[0][:1].upper() + atom.split(",")[3].split(")")[0][1:]
+                        print (relation)
                         data_JSON[doc_id]["relations"].append(relation)
                         
                     if 'nerjoinre(0,e,e' in atom :
@@ -146,16 +152,17 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
                 entity_with_all =[]
                 removed=0
                 for idx,entity in enumerate(data_JSON[doc_id]["entities"]):
+                    removed+=1
                     if entity["type"]!="No":
                         entity_with_all.append(entity)
                     else :
-                        removed+=1
+                        
                         for relation in data_JSON[doc_id]["relations"] :
                             if relation["head"]>= removed:
                                 relation["head"]-=1
                             if relation["tail"]>= removed:
                                 relation["tail"]-=1
-                        
+                        removed-=1
                 data_JSON[doc_id]["entities"]=entity_with_all
                 
             if sup :
@@ -166,12 +173,6 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
 
                 data_JSON[doc_id]["relations"]=relation_with_all
 
-                        #data_JSON[doc_id]["relations"].remove(int(relation_id))
-                
-
-                    
-
-    #print(data_JSON[:2])
     with open(file_result, 'w') as f:
         json.dump(data_JSON, f)
         print("*********** You can actually test your model with evaluation functions")
