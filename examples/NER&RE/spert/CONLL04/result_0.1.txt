@@ -1,0 +1,2 @@
+../CONLL04/logs/spert_treshold_0.1
+*********************************** ../CONLL04/logs/spert_treshold_0.1/predictions_valid_epoch_*.json

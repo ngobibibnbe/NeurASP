@@ -58,12 +58,12 @@ def get_result_by_threshold(threshold):
     f.close()
     return dict
 
-thresholds=[0.1,0.4,0.8]
+thresholds=[0.1,0.3,0.5,0.8,0.4]
 result={}
 for threshold in thresholds :
     result[str(threshold)]=get_result_by_threshold(threshold)
 
-#print(result)
+print(result)
 
 
 
@@ -98,7 +98,7 @@ for threshold,values_parts in result.items():
                         ####################après enlever pour qu'on ait aussi le micro 
                         print(epoch, " ", float(value["neurASP-SUP"]), " ",float(value["neurASP-SUP"]) )
                         writer.add_scalars("Test-"+database+" "+str("runs/"+threshold+"/"+key_eval+"/"+key_type+"/"+metric) ,
-                        {"SPERT": float(value["predictions"]), "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, int(epoch))
+                        {"SPERT": float(value["predictions"]),"SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, int(epoch))
                         #                    {"SPERT": float(value["predictions"]), "SPERT-Neur-SUP": float(value["neurASP-SUP"])}, int(epoch))
                         #                   "SPERT-Neur": float(value["neurASP"]), "SPERT-Neur-FE": float(value["neurASP-FE"]),
                         #                    "SPERT-Neur-FE-SUP": float(value["neurASP-FE-SUP"]),"""
