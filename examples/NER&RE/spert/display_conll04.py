@@ -8,12 +8,12 @@ def get_macro_and_micro(dict, file,nam):
                                
             dict["micro"]["precision"][name][type]=line.split("        ")[2]
             dict["micro"]["recall"][name][type]=line.split("        ")[3]
-            dict["micro"]["f1-score"][name][type]=line.split("       ")[4]
+            dict["micro"]["f1-score"][name][type]=line.split("        ")[4]
         if "macro" in line :
             
             dict["macro"]["precision"][name][type]=line.split("        ")[2] 
             dict["macro"]["recall"][name][type]=line.split("        ")[3]
-            dict["macro"]["f1-score"][name][type]=line.split("       ")[4]
+            dict["macro"]["f1-score"][name][type]=line.split("        ")[4]
             #print("**macro",dict)
             return dict 
         
