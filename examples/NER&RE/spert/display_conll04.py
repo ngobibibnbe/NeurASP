@@ -58,7 +58,7 @@ def get_result_by_threshold(threshold):
     f.close()
     return dict
 
-thresholds=[0.1,0.3,0.5,0.8,0.4]
+thresholds=[0.0,0.1,0.3,0.5,0.8,0.4]
 result={}
 for threshold in thresholds :
     result[str(threshold)]=get_result_by_threshold(threshold)
