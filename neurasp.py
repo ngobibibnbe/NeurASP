@@ -33,6 +33,7 @@ class NeurASP(object):
         self.normalProbs = None # record the probabilities from normal prob rules
         self.nnOutputs = {}
         self.nnGradients = {}
+        self.context=False
         if gpu==True:
             self.nnMapping = {key : nn.DataParallel(nnMapping[key].to(self.device)) for key in nnMapping}
         else:
