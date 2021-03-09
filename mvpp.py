@@ -29,7 +29,7 @@ class MVPP(object):
 
         self.pc, self.parameters, self.learnable, self.asp, self.pi_prime, self.remain_probs = self.parse(program)
         self.normalize_probs()
-        #self.context=DefaultContext()
+        self.context=False
 
     def parse(self, program):
         pc = []
