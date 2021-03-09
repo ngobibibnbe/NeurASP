@@ -10,7 +10,13 @@ import torch.nn as nn
 
 from mvpp import MVPP
 
+import clingo
 
+class DefaultContext:
+    def test(self, x):
+        return x
+   
+        
 class NeurASP(object):
     def __init__(self, dprogram, nnMapping, optimizers, gpu=True):
 
@@ -21,7 +27,7 @@ class NeurASP(object):
         @param gpu: a Boolean denoting whether the user wants to use GPU for training and testing
         """
         self.device = torch.device('cuda' if torch.cuda.is_available() and gpu else 'cpu')
-
+        self.context=DefaultContext()
         self.dprogram = dprogram
         self.const = {} # the mapping from c to v for rule #const c=v.
         self.n = {} # the mapping from nn name to an integer n denoting the domain size; n would be 1 or N (>=3); note that n=2 in theorey is implemented as n=1
@@ -226,6 +232,7 @@ class NeurASP(object):
 
         # Step 3: find an optimal SM under obs
         dmvpp = MVPP(facts + mvppRules + mvpp)
+        dmvpp.context=self.context
         return dmvpp.find_one_most_probable_SM_under_obs_noWC(obs=obs) , obs
 
 
