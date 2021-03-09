@@ -8,6 +8,7 @@ import time
 import clingo
 import numpy as np
 
+
 class MVPP(object):
     def __init__(self, program, k=1, eps=0.000001):
         self.k = k
@@ -28,6 +29,7 @@ class MVPP(object):
 
         self.pc, self.parameters, self.learnable, self.asp, self.pi_prime, self.remain_probs = self.parse(program)
         self.normalize_probs()
+        #self.context=DefaultContext()
 
     def parse(self, program):
         pc = []
@@ -216,7 +218,11 @@ class MVPP(object):
         models = []
         print("***************",program)
         clingo_control.add("base", [], program)
-        clingo_control.ground([("base", [])])
+        if self.context :
+            clingo_control.ground([("base", [])],context=self.context)
+             # , context=Context() for adding meta-programation
+        else:
+            clingo_control.ground([("base", [])])
         clingo_control.solve(None, lambda model: models.append(model.symbols(atoms=True)))
         models = [[str(atom) for atom in model] for model in models]
         #print(program)
