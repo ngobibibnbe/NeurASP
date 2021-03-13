@@ -37,7 +37,7 @@ import torch.nn as nn
 
 from mvpp import MVPP
 
-
+record={}
 class NeurASP(object):
     def __init__(self, dprogram, nnMapping, optimizers, gpu=True):
 
@@ -418,13 +418,16 @@ class NeurASP(object):
                 
                 if dataIdx%500==0:
                     writer.add_scalar("NeurASP",printed_acc,dataIdx)
-                    print(dataIdx)
+                    record[dataIdx]=printed_acc
+                    print(record)
+                    
 
             # Step 6: save the stable models in a pickle file for potentially later usage
             if savePickle:
                 with open(smPickle, 'wb') as fp:
                     pickle.dump(self.stableModels, fp)
                 savePickle = False
+        print(record)
 
     def testNN(self, nn, testLoader):
         """

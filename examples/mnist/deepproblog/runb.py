@@ -10,7 +10,7 @@ from logger import Logger
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter("../runs")
-
+record={}
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -121,8 +121,11 @@ for epoch in range(1):
             print('Iteration: ', i , '\tAverage Loss: ', running_loss / log_period)
             log.log('loss', i , running_loss / log_period)
             running_loss = 0
-        if i % test_period == 0:
+        if i % 500 == 0:
             accuracy_d = test_MNIST()
-            log.log('acc', i , accuracy_d)
+            #log.log('acc', i , accuracy_d)
             writer.add_scalar("NeurASP",100*accuracy_d,i)
+            record[i]= 100*accuracy_d
+            print (record)
         i += 1
+print (record)

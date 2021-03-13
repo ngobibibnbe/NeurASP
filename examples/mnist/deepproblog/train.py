@@ -7,7 +7,7 @@ from logic import term2list2
 import random
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter("../runs")
-
+record={}
 interrupt = False
 zero_probability = False
 
@@ -56,7 +56,7 @@ def train_model(model,queries,nr_epochs,optimizer, loss_function = train, test_i
     accumulated_loss = 0
     logger = Logger()
     start = time.time()
-    print("Training for {} epochs ({} iterations).".format(nr_epochs,nr_epochs*len(queries)))
+    #print("Training for {} epochs ({} iterations).".format(nr_epochs,nr_epochs*len(queries)))
     if test is not None:
         #logger.log_list(i,test(model))
         print("ok")
@@ -64,7 +64,7 @@ def train_model(model,queries,nr_epochs,optimizer, loss_function = train, test_i
         epoch_start = time.time()
         if interrupt:
             break
-        print("Epoch",epoch+1)
+        #print("Epoch",epoch+1)
         q_indices = list(range(len(queries)))
         if shuffle:
             random.shuffle(q_indices)
@@ -99,11 +99,14 @@ def train_model(model,queries,nr_epochs,optimizer, loss_function = train, test_i
 
             if test is not None and i % 500 == 0: 
               #logger.log_list(i,test(model))
-              print("ok",i)
+              #print("ok",i)
               accuracy_d = test(model)
               writer.add_scalar("NeurASP",100*accuracy_d,i)
+              record[i]=100*accuracy_d
+              print (record)
 
             i += 1
         optimizer.step_epoch()
-        print('Epoch time: ',time.time()-epoch_start)
+        #print('Epoch time: ',time.time()-epoch_start)
+    print(record)
     return logger

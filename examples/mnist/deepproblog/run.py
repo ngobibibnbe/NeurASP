@@ -10,7 +10,7 @@ from model import Model
 from optimizer import Optimizer
 from network import Network
 import torch
-
+record={}
 queries = load('train_data.txt')
 
 with open('addition.pl') as f:
