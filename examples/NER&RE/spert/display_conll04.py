@@ -18,7 +18,7 @@ def get_macro_and_micro(dict, file,nam):
             return dict 
         
 def get_result_by_threshold(threshold):
-    result = "CONLL04/result_"+str(threshold)+".txt"
+    result = "CONLL04/result_sophie"+str(threshold)+".txt"
     
     f = open(result, "r")   
     all=[]
@@ -178,7 +178,7 @@ for threshold,values_parts in result.items():
                 
 writer.close()
 
-print ("best values: ",max)
+print ("best values: ",max[2])
 """"import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
