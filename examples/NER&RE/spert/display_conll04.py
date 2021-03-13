@@ -58,12 +58,14 @@ def get_result_by_threshold(threshold):
     f.close()
     return dict
 
-thresholds=[0.0,0.1,0.3,0.5,0.8,0.4]
+#thresholds=[0.0,0.1,0.3,0.5,0.8,0.4]
+thresholds=[0.0]
+
 result={}
 for threshold in thresholds :
     result[str(threshold)]=get_result_by_threshold(threshold)
 
-#print(result)
+print(result)
 
 
 max_spert=[0,0]
@@ -92,9 +94,9 @@ for threshold,values_parts in result.items():
             for metric, values in evaluation.items() :
                 #precision
                 if a==1:
-                    #max[0][key_type+" "+key_eval+" "+metric]=[0]
+                    max[0][key_type+" "+key_eval+" "+metric]=[0]
                     max[2][key_type+" "+key_eval+" "+metric]=[0]
-                    #max[1][key_type+" "+key_eval+" "+metric]=[0]
+                    max[1][key_type+" "+key_eval+" "+metric]=[0]
                 i=0
                 if i==0 :#key_eval =="micro" :# or key_type=="RE" ): 
                     #print(key_eval," ",key_type, " ",metric)
@@ -141,17 +143,17 @@ for threshold,values_parts in result.items():
                                 R_RE["neur"]["spert"].append((epoch, value["predictions"]))
 
                             if key_type =="NER-RE":
-                                R_RE["neur"]["neur-sup"].append((epoch, value["neurASP-SUP"]))
-                                R_RE["neur"]["neur"].append((epoch, value["neurASP"]))
-                                R_RE["neur"]["spert"].append((epoch, value["predictions"]))
+                                R_NR["neur"]["neur-sup"].append((epoch, value["neurASP-SUP"]))
+                                R_NR["neur"]["neur"].append((epoch, value["neurASP"]))
+                                R_NR["neur"]["spert"].append((epoch, value["predictions"]))
                             
                         #if key_type=="RE" and key_eval =="micro"and metric=="precision":
-                        """if max[2][key_type+" "+key_eval+" "+metric][0]<float(value["neurASP-SUP"]) :
+                        if max[2][key_type+" "+key_eval+" "+metric][0]<float(value["neurASP-SUP"]) :
                             max[2][key_type+" "+key_eval+" "+metric]=[float(value["neurASP-SUP"]),epoch ,threshold]
                         if metric=="f1-score" and max[1][key_type+" "+key_eval+" "+metric][0]<float(value["neurASP"]) :
                             max[1][key_type+" "+key_eval+" "+metric]=[float(value["neurASP"]),epoch ,threshold]
                         if max[0][key_type+" "+key_eval+" "+metric][0]<float(value["predictions"]): 
-                            max[0][key_type+" "+key_eval+" "+metric]=[float(value["predictions"]),epoch ,threshold]"""
+                            max[0][key_type+" "+key_eval+" "+metric]=[float(value["predictions"]),epoch ,threshold]
                         ####################après enlever pour qu'on ait aussi le micro 
                         #print(epoch, " ", float(value["neurASP-SUP"]), " ",float(value["neurASP-SUP"]) )
                         writer.add_scalars("Test-"+database+" "+str("runs/"+threshold+"/"+key_eval+"/"+key_type+"/"+metric) ,
@@ -176,12 +178,11 @@ for threshold,values_parts in result.items():
                 
 writer.close()
 
-#print ("best values: ",R_RE , R_NR, R_NER)
-import numpy as np
+print ("best values: ",max)
+""""import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import  pandas as pd
-print(R_NR)
 for R in [R_NER, R_NR, R_RE]:
     for key,values in   R.items():
         mat=[[],[],[],[]]
@@ -201,7 +202,6 @@ for R in [R_NER, R_NR, R_RE]:
             if key2=="neur-sup":
                 mat[2]=tmp2
         sns.set(style='darkgrid')
-        print(mat)
         if R_RE ==R:
              op="Relation extraction"
         if R_NR==R:
@@ -222,29 +222,14 @@ for R in [R_NER, R_NR, R_RE]:
             data=df,  x="epoch", y="neurASP-SUP",color='green'
         )
         if R_RE ==R:
-             op="Relation extraction"
+             op="RE"
         if R_NR==R:
-            op="join named entity and relation extraction"
+            op="NER join RE"
         if R_NER ==R:
-            op="name entity recognition"
+            op="NER "
 
-        plt.title('result on '+op+" for " +key)
+        plt.title('result on '+op+" best performances of " +key)
         plt.legend()
         plt.show()
 
-
-{'spert': {'spert': [('1', ' 2.76'), ('2', '29.71'), ('3', '49.64'), ('4', '62.71'), 
-('5', '68.18'), ('6', '66.91'), ('7', '68.69'), ('8', '69.54'), ('9', '69.77'), ('10',
- '69.68'), ('11', '69.35'), ('12', '71.21'), ('13', '69.22'), ('14', '70.44'), 
- ('15', '70.44'), ('16', '71.67'), ('17', '70.67'), ('18', '70.84'), ('19', '71.24'), 
- ('20', '70.99')], 'neur': [('1', ' 2.76'), ('2', '29.64'), ('3', '49.53'), ('4', '63.03'),
-  ('5', '68.32'), ('6', '66.60'), ('7', '68.22'), ('8', '68.58'), ('9', '69.58'),
-   ('10', '69.32'), ('11', '68.98'), ('12', '71.03'), ('13', '68.75'), ('14', '70.17'), 
-   ('15', '70.17'), ('16', '71.50'), ('17', '70.50'), ('18', '70.66'), ('19', '71.06'), 
-   ('20', '70.81')], 'neur-sup': [('1', ' 2.17'), ('2', '27.51'), ('3', '49.55'), 
-   ('4', '65.19'), ('5', '70.45'), ('6', '69.77'), ('7', '69.80'), ('8', '71.16'), 
-   ('9', '71.52'), ('10', '70.77'), ('11', '70.67'), ('12', '72.27'), ('13', '70.97'),
-    ('14', '72.13'), ('15', '71.88'), ('16', '73.38'), ('17', '72.35'), ('18', '72.31'), 
-    ('19', '72.76'), ('20', '72.51')]}, 'neur': {'spert': [], 'neur': [], 'neur-sup': []},
-     'neur-sup': {'spert': [('1', ' 2.23'), ('2', ' 7.69'), ('3', '10.51'), ('4', '13.16'), ('5', '14.03'), ('6', '12.92'), ('7', '15.53'), ('8', '14.35'), ('9', '15.55'), ('10', '15.18'), ('11', '14.87'), ('12', '15.61'), ('13', '15.24'), ('14', '15.61'), ('15', '15.85'), ('16', '16.13'), ('17', '15.95'), ('18', '16.24'), ('19', '15.98'), ('20', '16.11')], 'neur': [('1', ' 0.69'), ('2', ' 1.35'), ('3', ' 1.54'), ('4', ' 1.76'), ('5', ' 1.74'), ('6', ' 1.73'), ('7', ' 1.91'), ('8', ' 1.89'), ('9', ' 2.11'), ('10', ' 1.95'), ('11', ' 1.93'), ('12', ' 1.99'), ('13', ' 2.02'), ('14', ' 2.00'), ('15', ' 2.01'), ('16', ' 2.07'), ('17', ' 2.07'), ('18', ' 2.04'), ('19', ' 2.04'), ('20', ' 2.03')], 'neur-sup': [('1', ' 3.12'), ('2', '27.12'), ('3', '52.56'), ('4', '61.85'), ('5', '69.25'), ('6', '68.57'), ('7', '70.13'), ('8', '70.88'), ('9', '71.02'), ('10', '70.97'), ('11', '71.56'), ('12', '73.71'), ('13', '71.78'), ('14', '72.05'), ('15', '71.78'), 
-('16', '72.91'), ('17', '72.50'), ('18', '72.47'), ('19', '73.12'), ('20', '72.76')]}}
+"""

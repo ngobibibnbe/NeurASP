@@ -139,8 +139,8 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
         nested(IdE1, IdE2)  :- nerjoinre(0,E,IdE1,Name), Name!=no, entity(E,IdE1,_,Start1,End1),entity(E,IdE2,_,Start2,End2), (|Start1 - Start2|+|End1-End2|)=1.
         
         % knowledge transfer 
-        newrelation(IdR,IdE3,IdE1,Relation) ,nerjoinre(0,R,IdR,no) :- nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE3,IdE1),nerjoinre(0,R,IdR,Relation), Relation!=no.
-        newrelation(IdR,IdE1,IdE3,Relation) ,nerjoinre(0,R,IdR,no) :- nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE1,IdE3),nerjoinre(0,R,IdR,Relation), Relation!=no.
+        newrelation(IdR,IdE3,IdE1,Relation) ,nerjoinre(0,R,IdR,no) :-   nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE3,IdE2),nerjoinre(0,R,IdR,Relation), Relation!=no.
+        newrelation(IdR,IdE1,IdE3,Relation) ,nerjoinre(0,R,IdR,no) :- nested(IdE1, IdE2), entity(E,IdE1,_), entity(E,IdE2,_), relation(R,IdR,IdE2,IdE3),nerjoinre(0,R,IdR,Relation), Relation!=no.
         
         % identical entities should have the same relation if none is null of curse ***** à tester sans : 69,89 sans et 70,17 avec
         %newrelation(IdR,IdE2,IdE3,Relation) :- relation(R,IdR,IdE1,IdE3),nerjoinre(0,R,IdR,Relation), nerjoinre(0,E,IdE1,Named),nerjoinre(0,E,IdE2,Named), Named!=no, Relation!=no, entity(E,IdE1,Value), entity(E,IdE2,Value).
@@ -148,8 +148,16 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
 
         % dependencies
             % dependencies in location
-        newrelation(IdE1,IdE1,IdE3,located_In) :- relation(R,IdR1,IdE1,IdE2),relation(R,IdR2,IdE2,IdE3),not relation(R,_,IdE1,IdE3), nerjoinre(0,E,IdE3,loc), nerjoinre(0,E,IdE2,loc), nerjoinre(0,E,IdE1,loc),nerjoinre(0,R,IdR1,located_In),nerjoinre(0,R,IdR2,located_In).
-   
+        %newrelation(IdE1,IdE1,IdE3,located_In) :- relation(R,IdR1,IdE1,IdE2),relation(R,IdR2,IdE2,IdE3),not relation(R,_,IdE1,IdE3), nerjoinre(0,E,IdE3,loc), nerjoinre(0,E,IdE2,loc), nerjoinre(0,E,IdE1,loc),nerjoinre(0,R,IdR1,located_In),nerjoinre(0,R,IdR2,located_In).
+        %newrelation(IdE1,IdE1,IdE3,located_In) :- relation(R,IdR1,IdE1,IdE2),relation(R,IdR2,IdE2,IdE3),not relation(R,_,IdE1,IdE3), nerjoinre(0,E,IdE3,loc), nerjoinre(0,E,IdE2,loc), nerjoinre(0,E,IdE1,loc),nerjoinre(0,R,IdR1,located_In),nerjoinre(0,R,IdR2,located_In).
+
+        
+        entity_pair_relation(E1, E2,R1, Named_Relation):-nerjoinre(0,R,R1,Named_Relation), relation(R,R1,E1,E2),entity(E,E1,Value1), entity(E,E2,Value2).
+        entity_pair(E1, E2, Named_Relation) :- nerjoinre(0,R,R1,Named_Relation), relation(R,R1,E1,E2), entity(E,E1,Value1), entity(E,E2,Value2).
+        test_pair(Value1, Value2, Named_Relation, S):- S=#count{R1 : entity_pair_relation(Value1, Value2,R1, Named_Relation)}, entity_pair(Value1, Value2, Named_Relation), Named_Relation!=no .
+        :- test_pair(Value1, Value2, Named_Relation, S), S>1.
+
+
         % an entity can't have two types  
          
          test(Value, Named) :- nerjoinre(0,E,IdE,Named) , entity(E,IdE,Value), not nerjoinre(0,E,IdE,no).
@@ -198,7 +206,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             entity_type = str(entity_brut["type"])
             Factlist=Factlist+"entity(e,e"+str(idx)+",'b_"+(''.join(e for e in entity_words if e.isalnum())).lower()+"',"+str(entity_brut["start"])+","+str(entity_brut["end"])+").\n "
             probs =1*np.fromstring(entity_probs, dtype=float, sep=' ')
-            probs[0]=0.12
+            probs[0]=0.13
             #print("********",probs)
             DataList['e,e'+str(idx)]=torch.tensor([probs], dtype=torch.float64)
 
@@ -211,7 +219,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             #print("**rel**",relation_brut)
             relation_probs = relation_brut["probs"].split("[")[1].split("]")[0]
             probs= np.fromstring(relation_probs, dtype=float, sep=' ')
-            probs =np.append(probs, [0.26])
+            probs =np.append(probs, [0.25])
             DataList['r,r'+str(idx)] = torch.tensor([probs], dtype=torch.float64)
             Factlist=Factlist+"relation(r,r"+str(idx)+",e"+str(relation_brut["head"])+",e"+str(relation_brut["tail"])+").\n "
         Factlist=[Factlist]
@@ -276,8 +284,8 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
         print("*********** You can actually test your model with evaluation functions")
 
 
-thresholds=[0.1,0.3,0.5,0.8,0.4]
-#thresholds=[0.8]
+#thresholds=[0.0,0.1,0.3,0.5,0.8,0.4]
+thresholds=[0.0]
 #print("logs\spert_treshold_"+str(threshold)+"/*.json")
 for threshold in thresholds:
     files =glob.glob("CONLL04/logs/spert_treshold_"+str(threshold)+"/predictions*.json")
@@ -287,7 +295,7 @@ for threshold in thresholds:
         file_result=file_.split("/")[0] +"/"+file_.split("/")[1] +"/"+file_.split("/")[2]
         file_name=file_.split('/')[-1]        
         file_result1=file_result+"/neurASP_"+file_name
-        smooth_Neur(data_JSON,file_result1)
+        #smooth_Neur(data_JSON,file_result1)
         file_result3=file_result+"/neurASP-SUP_"+file_name
         NeurSUP(data_JSON,file_result3,sup=True,sup_Entity=True)
         
