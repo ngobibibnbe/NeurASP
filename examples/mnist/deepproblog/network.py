@@ -9,17 +9,17 @@ def count_backward(self, x, y):
     self.n += 1
 
 
-
 class Network(object):
     def __init__(self, net, name, function, optimizer=None, model=None):
         self.evaluated = dict()
         self.net = net
         self.net.n = 0
-        self.net.register_backward_hook(count_backward)
+        #self.net.register_backward_hook(count_backward)
         self.name = name
         self.function = function
         self.optimizer = optimizer
         self.model = model
+        
 
     def normalize(self):
         for param in self.net.parameters():

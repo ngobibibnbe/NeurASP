@@ -8,7 +8,14 @@ import torch.optim as optim
 from torch.autograd import Variable
 from logger import Logger
 import numpy as np
+
 from torch.utils.tensorboard import SummaryWriter
+import random
+random.seed(0)
+torch.manual_seed(0)
+import numpy as np
+np.random.seed(0)
+
 writer = SummaryWriter("../runs")
 record={}
 class Net(nn.Module):
@@ -65,8 +72,15 @@ def test_MNIST():
     print('Accuracy: ', acc)
     return acc
 
+@torch.no_grad()
+def init_weights(m):
+    print(m)
+    if type(m) == nn.Linear or type(m) == nn.Conv2d:
+        m.weight.fill_(1.0)
+        print(m.weight)
 
 net = Net()
+net.apply(init_weights)
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5), (0.5))])
 criterion = nn.NLLLoss()
@@ -104,6 +118,11 @@ log_period = 500
 running_loss = 0.0
 log = Logger()
 
+if i==1 :
+            accuracy_d = test_MNIST()
+            writer.add_scalar("begining",100*accuracy_d,i)
+            record[i]= 100*accuracy_d
+            print (record)
 for epoch in range(1):
 
     for data in trainloader:
@@ -127,5 +146,6 @@ for epoch in range(1):
             writer.add_scalar("NeurASP",100*accuracy_d,i)
             record[i]= 100*accuracy_d
             print (record)
+        
         i += 1
 print (record)
