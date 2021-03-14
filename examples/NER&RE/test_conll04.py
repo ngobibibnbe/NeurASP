@@ -206,7 +206,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             entity_type = str(entity_brut["type"])
             Factlist=Factlist+"entity(e,e"+str(idx)+",'b_"+(''.join(e for e in entity_words if e.isalnum())).lower()+"',"+str(entity_brut["start"])+","+str(entity_brut["end"])+").\n "
             probs =1*np.fromstring(entity_probs, dtype=float, sep=' ')
-            probs[0]=0.12
+            probs[0]=0.12 #0.12
             #print("********",probs)
             DataList['e,e'+str(idx)]=torch.tensor([probs], dtype=torch.float64)
 
@@ -219,7 +219,7 @@ def NeurSUP (data_JSON,file_result,sup=False, sup_Entity=False):
             #print("**rel**",relation_brut)
             relation_probs = relation_brut["probs"].split("[")[1].split("]")[0]
             probs= np.fromstring(relation_probs, dtype=float, sep=' ')
-            probs =np.append(probs, [0.26])
+            probs =np.append(probs, [0.5]) #
             DataList['r,r'+str(idx)] = torch.tensor([probs], dtype=torch.float64)
             Factlist=Factlist+"relation(r,r"+str(idx)+",e"+str(relation_brut["head"])+",e"+str(relation_brut["tail"])+").\n "
         Factlist=[Factlist]
